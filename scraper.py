@@ -24,34 +24,60 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 import time
-import tkinter
 from tkinter import simpledialog
+
+dane = [
+    ["Lp.", "Nazwa podmiotu, w związku z działalnością którego złożono zawiadomienie o podejrzeniu popełnienia przestępstwa",
+        "Numer identyfikujący podmiot (KRS, NIP lub REGON)", "Właściwa prokuratura", "Wzmianki o prawomocnych orzeczeniach wydanych w toku postępowania karnego", "Informacje istotne", "Data złożenia zawiadomienia/ Data złożenia wniosku o korzystanie z uprawnień pokrzywdzonego", "Data rozstrzygnięcia"],
+]
 
 
 def scrape_and_export():
     response = requests.get(
         "https://www.knf.gov.pl/dla_konsumenta/ostrzezenia_publiczne")
-    target_selector = r"#\35 1301 > td:nth-child(2)"
 
     soup = BeautifulSoup(response.content, 'html.parser')
-    selected_element = soup.select_one(target_selector)
-
-    if selected_element:
-        content = selected_element.get_text(strip=True)
-    else:
-        content = "Element not found"
-
-    with open('output.csv', 'w', newline='', encoding='utf-8') as csv_file:
-        csv_writer = csv.writer(csv_file)
-        csv_writer.writerow([content])
+        
+    table_with_header = soup.find_all('div', class_="table-with-header-parent")
+    
+    # table_titles = soup.find_all('table', class_='warning-list-table')
+    titles = [];
+    
+    for el in table_with_header:
+      zawiadomienie = el.find('p').text;
+      
+      tr_list = el.find_all('tr');
+      print(zawiadomienie)
+      print(len(tr_list))
+ 
+      
+    # print(tables)
+    
+    if (False):
+      tablica_wierszy = []
+      
+      for tr in tbody.find_all('tr'):
+        tablica_tekst_wiersza = []
+        
+        for th in tr.find_all('th'):
+          tablica_tekst_wiersza.append(th.get_text(strip=True))
+          
+        tablica_wierszy.append(tablica_tekst_wiersza)
+        
+      with open('dane.csv', 'w', newline='', encoding='utf-8') as plik_csv:
+            writer = csv.writer(plik_csv)
+            writer.writerows(tablica_wierszy)
+      
 
 
 if __name__ == "__main__":
     numerek = simpledialog.askinteger(
         "knf-scraper", "Co ile godzin dane mają być pobierane?", initialvalue=10)
+
     while True:
         scrape_and_export()
-
         print(numerek)
-    # interwał wybrany przez użytkownika (w godzinach)
-        time.sleep(numerek * 60 * 60)
+
+        
+
+        time.sleep(100)
