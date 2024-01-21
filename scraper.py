@@ -37,37 +37,26 @@ def scrape_and_export():
         "https://www.knf.gov.pl/dla_konsumenta/ostrzezenia_publiczne")
 
     soup = BeautifulSoup(response.content, 'html.parser')
-        
+
     table_with_header = soup.find_all('div', class_="table-with-header-parent")
+
+    dane = []
+
+    for table_with_header in table_with_header:
+        tr_elements = table_with_header.find_all('tr', class_='warning-row')
+        for tr in tr_elements:
+            td_editors = tr.find_all('td', class_='editor')
+            row_data = [td.text.strip() for td in td_editors]
+            dane.append(row_data)
+
+
+    with open('output.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        csv_writer = csv.writer(csvfile)
     
-    # table_titles = soup.find_all('table', class_='warning-list-table')
-    titles = [];
+        header_row = [f"Column {i+1}" for i in range(len(dane[0]))]
+        csv_writer.writerow(header_row)
     
-    for el in table_with_header:
-      zawiadomienie = el.find('p').text;
-      
-      tr_list = el.find_all('tr');
-      print(zawiadomienie)
-      print(len(tr_list))
- 
-      
-    # print(tables)
-    
-    if (False):
-      tablica_wierszy = []
-      
-      for tr in tbody.find_all('tr'):
-        tablica_tekst_wiersza = []
-        
-        for th in tr.find_all('th'):
-          tablica_tekst_wiersza.append(th.get_text(strip=True))
-          
-        tablica_wierszy.append(tablica_tekst_wiersza)
-        
-      with open('dane.csv', 'w', newline='', encoding='utf-8') as plik_csv:
-            writer = csv.writer(plik_csv)
-            writer.writerows(tablica_wierszy)
-      
+        csv_writer.writerows(dane)
 
 
 if __name__ == "__main__":
@@ -77,7 +66,4 @@ if __name__ == "__main__":
     while True:
         scrape_and_export()
         print(numerek)
-
-        
-
-        time.sleep(100)
+        time.sleep(numerek * 3600)
